@@ -2,6 +2,7 @@ package ui
 
 import (
     "fmt"
+    "math"
     "strings"
 
     "github.com/charmbracelet/lipgloss"
@@ -31,14 +32,76 @@ var (
         Foreground(secondaryColor).
         Bold(true)
 )
+var spiralStyle = lipgloss.NewStyle().
+    Foreground(lipgloss.Color("#7C3AED")).
+    Padding(1, 2).
+    Width(26)
+
+func renderSpiral(frame int) string {
+    rows := 13
+    cols := 24
+    // Use a float grid to track intensity
+    grid := make([][]rune, rows)
+    for i := range grid {
+        grid[i] = make([]rune, cols)
+        for j := range grid[i] {
+            grid[i][j] = ' '
+        }
+    }
+
+    cx := float64(cols) / 2.0
+    cy := float64(rows) / 2.0
+
+    type ring struct {
+        radius  float64
+        dots    int
+        speed   float64
+        char    rune
+    }
+
+    rings := []ring{
+        {1.5, 6,  0.08, '·'},
+        {3.0, 10, 0.05, '•'},
+        {4.5, 16, 0.03, '●'},
+        {6.0, 22, 0.02, '•'},
+        {7.5, 28, 0.01, '·'},
+    }
+
+    for _, r := range rings {
+        phase := float64(frame) * r.speed
+        for d := 0; d < r.dots; d++ {
+            angle := (float64(d)/float64(r.dots))*2*math.Pi + phase
+            x := cx + r.radius*2.2*math.Cos(angle)
+            y := cy + r.radius*math.Sin(angle)
+
+            xi := int(math.Round(x))
+            yi := int(math.Round(y))
+
+            if yi >= 0 && yi < rows && xi >= 0 && xi < cols {
+                grid[yi][xi] = r.char
+            }
+        }
+    }
+
+    var sb strings.Builder
+    for _, row := range grid {
+        sb.WriteString(string(row))
+        sb.WriteRune('\n')
+    }
+    return sb.String()
+}
 
 func (m Model) View() string {
-    var sections []string
-    sections = append(sections, m.renderHeader())
-    sections = append(sections, m.renderTabs())
-    sections = append(sections, m.renderContent())
-    sections = append(sections, m.renderFooter())
-    return lipgloss.JoinVertical(lipgloss.Left, sections...)
+    header := m.renderHeader()
+    tabs   := m.renderTabs()
+
+    spiral  := spiralStyle.Render(renderSpiral(m.frame))
+    content := contentStyle.Width(m.width - 30).Render(m.renderContent())
+
+    middle := lipgloss.JoinHorizontal(lipgloss.Top, spiral, content)
+    footer := m.renderFooter()
+
+    return lipgloss.JoinVertical(lipgloss.Left, header, tabs, middle, footer)
 }
 
 func (m Model) renderHeader() string {

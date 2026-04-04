@@ -1,8 +1,6 @@
 package ui
 
-import (
-    tea "github.com/charmbracelet/bubbletea"
-)
+import tea "github.com/charmbracelet/bubbletea"
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     switch msg := msg.(type) {
@@ -11,25 +9,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
         switch msg.String() {
         case "q", "ctrl+c":
             return m, tea.Quit
-
         case "right", "l", "tab":
             m.activeTab = (m.activeTab + 1) % len(m.tabs)
-
         case "left", "h", "shift+tab":
             m.activeTab = (m.activeTab - 1 + len(m.tabs)) % len(m.tabs)
-
         case "up", "k":
             if m.cursor > 0 {
                 m.cursor--
             }
-
         case "down", "j":
             m.cursor++
         }
+
+    case tickMsg:
+        m.frame++
+        return m, tickCmd()
 
     case tea.WindowSizeMsg:
         m.width = msg.Width
         m.height = msg.Height
     }
+
     return m, nil
 }
