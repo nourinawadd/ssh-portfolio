@@ -12,6 +12,7 @@ import (
     "github.com/charmbracelet/wish"
     "github.com/charmbracelet/wish/bubbletea"
     "github.com/charmbracelet/ssh"
+	"github.com/nourinawadd/ssh-portfolio/ui"
 )
 
 const (
