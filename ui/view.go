@@ -64,14 +64,11 @@ var (
 	footerSty  = lipgloss.NewStyle().Foreground(clrDim)
 
 	tagSty = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#E8EEF2")).
-		Background(lipgloss.Color("#4D7A96")).
-		Padding(0, 1)
+		Foreground(clrSecond)
 
 	catSty = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#E8EEF2")).
-		Background(lipgloss.Color("#5D8EA6")).
-		Padding(0, 1)
+		Foreground(clrAccent).
+		Bold(true)
 
 	spiralSty = lipgloss.NewStyle().Foreground(clrAccent)
 )
@@ -105,7 +102,7 @@ var projects = []project{
 			"Node.js cron jobs + MongoDB for time-based scheduling & delivery logic",
 			"React frontend with Express/MongoDB backend for auth & note management",
 		},
-		github: "https://github.com/nourinawadd",
+		live demo: "https://tethernote.vercel.app/",
 	},
 	{
 		name:  "Subscriptions Tracker API",
@@ -116,7 +113,7 @@ var projects = []project{
 			"JWT authentication with bcrypt hashing and role-based access control",
 			"MongoDB/Mongoose schema across 3 collections with referential integrity",
 		},
-		github: "https://github.com/nourinawadd",
+		github: "https://github.com/nourinawadd/subscriptions-tracker-api",
 	},
 	{
 		name:  "Social Feed App",
@@ -127,7 +124,7 @@ var projects = []project{
 			"JWT authentication + RESTful API with Express/MongoDB backend",
 			"Angular SPA with HttpClient for API calls & responsive Bootstrap UI",
 		},
-		github: "https://github.com/nourinawadd",
+		github: "https://github.com/nourinawadd/mean-social-feed-app",
 	},
 }
 
@@ -139,21 +136,23 @@ var sideProjects = []sideProject{
 		bullets: []string{
 			"Various indie games built as personal passion projects",
 			"Exploring mechanics, art direction, and interactive storytelling",
-			"Source available on GitHub — check the link below",
+			"Released under Sifr Studios, source available on GitHub",
 		},
-		link: "https://github.com/nourinawadd",
+		link: "https://sifrstudios.itch.io/",
+		github: "https://github.com/nourinawadd"
 		tags: []string{"Game Dev", "Unity", "C#", "Indie"},
 	},
 	{
 		name:     "Behance Portfolio",
 		category: "Graphic Design",
-		short:    "Visual design work: branding, UI, illustration",
+		short:    "Visual design work: branding, illustration, animation",
 		bullets: []string{
 			"Branding, logo design, and visual identity projects",
-			"UI/UX mockups and interface design explorations",
+			"3D modelling and animation projects",
 			"Digital illustrations and creative compositions",
 		},
 		link: "https://www.behance.net/nourinawadd",
+		ig: "https://www.instagram.com/diarydump.jpg/",
 		tags: []string{"Graphic Design", "Branding", "UI/UX", "Illustration"},
 	},
 }
@@ -302,7 +301,7 @@ func (m Model) renderHeader() string {
 	if m.width < 55 {
 		return headerStyle.Render("Nourin Awad")
 	}
-	ascii := ` ▗▖  ▗▖ ▄▄▄  █  ▐▌ ▄▄▄ ▄ ▄▄▄▄       ▗▄▖ ▄   ▄ ▗▞▀▜▌▐▌▄
+	ascii := ` ▗▖  ▗▖ ▄▄▄  █  ▐▌ ▄▄▄ ▄ ▄▄▄▄       ▗▄▖ ▄   ▄ ▗▞▀▜▌▐▌
  ▐▛▚▖▐▌█   █ ▀▄▄▞▘█    ▄ █   █     ▐▌ ▐▌█ ▄ █ ▝▚▄▟▌▐▌  
  ▐▌ ▝▜▌▀▄▄▄▀      █    █ █   █     ▐▛▀▜▌█▄█▄█   ▗▞▀▜▌  
  ▐▌  ▐▌                █           ▐▌ ▐▌        ▝▚▄▟▌  `
@@ -427,8 +426,8 @@ func (m Model) renderAbout(w int) string {
 	b.WriteString("  managing system setup across 4 tracks.\n\n")
 
 	b.WriteString(sectionSty.Render("◆ Languages") + "\n\n")
-	b.WriteString("  " + tagSty.Render("English · Fluent") + "  " +
-		tagSty.Render("Arabic · Native") + "\n")
+	sep := dimSty.Render("  ·  ")
+	b.WriteString("  " + tagSty.Render("English · Fluent") + sep + tagSty.Render("Arabic · Native") + "\n")
 
 	return b.String()
 }
@@ -541,9 +540,14 @@ func (m Model) renderSideProjectDetail(idx int) string {
 		b.WriteString("  " + cursorSty.Render("▸") + " " + bullet + "\n")
 	}
 
-	b.WriteString("\n" + sectionSty.Render("Tags") + "\n  ")
-	for _, tag := range sp.tags {
-		b.WriteString(tagSty.Render(tag) + " ")
+	{
+		sep := dimSty.Render("  ·  ")
+		var parts []string
+		for _, tag := range sp.tags {
+			parts = append(parts, tagSty.Render(tag))
+		}
+		b.WriteString("\n" + sectionSty.Render("Tags") + "\n")
+		b.WriteString("  " + strings.Join(parts, sep))
 	}
 
 	b.WriteString("\n\n" + sectionSty.Render("Link") + "\n")
@@ -578,11 +582,13 @@ func (m Model) renderSkills(w int) string {
 	}
 
 	for _, s := range sections {
-		b.WriteString("  " + labelSty.Render(s.label) + "\n  ")
+		b.WriteString("  " + labelSty.Render(s.label) + "\n")
+		sep := dimSty.Render("  ·  ")
+		var parts []string
 		for _, item := range s.items {
-			b.WriteString(tagSty.Render(item) + " ")
+			parts = append(parts, tagSty.Render(item))
 		}
-		b.WriteString("\n\n")
+		b.WriteString("  " + strings.Join(parts, sep) + "\n\n")
 	}
 
 	return b.String()
