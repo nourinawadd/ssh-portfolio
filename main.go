@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -10,14 +9,18 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/ssh"
 	"github.com/charmbracelet/wish"
 	bm "github.com/charmbracelet/wish/bubbletea"
+	"github.com/muesli/termenv"
 
 	"github.com/nourinawadd/ssh-portfolio/ui"
 )
 
 func main() {
+	lipgloss.SetColorProfile(termenv.TrueColor)
+
 	s, err := wish.NewServer(
 		wish.WithAddress(":2323"),
 		wish.WithHostKeyPath("/home/ubuntu/.ssh/id_ed25519"),
