@@ -7,13 +7,14 @@ import (
 )
 
 type Model struct {
-	width      int
-	height     int
-	activeTab  int
-	tabs       []string
-	cursor     int
-	frame      int 
-	detailOpen bool 
+	width        int
+	height       int
+	activeTab    int
+	tabs         []string
+	cursor       int
+	frame        int
+	detailOpen   bool
+	scrollOffset int
 }
 
 func NewModel(width, height int) Model {

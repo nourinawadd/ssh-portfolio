@@ -11,62 +11,69 @@ import (
 // ─── Palette ──────────────────────────────────────────────────────────────────
 
 var (
-	clrPurple = lipgloss.Color("#7C3AED")
-	clrGreen  = lipgloss.Color("#10B981")
-	clrAmber  = lipgloss.Color("#F59E0B")
-	clrDim    = lipgloss.Color("#6B7280")
-	clrBright = lipgloss.Color("#F3F4F6")
-	clrIndigo = lipgloss.Color("#818CF8")
-	clrCyan   = lipgloss.Color("#22D3EE")
+	// dusty sky-blue – name, active borders, accent elements
+	clrAccent = lipgloss.Color("#7BADC0")
+	// pale blue-grey – section headers  (◆ headings)
+	clrSection = lipgloss.Color("#B8C8D4")
+	// muted blue-grey – labels, tech stacks
+	clrLabel = lipgloss.Color("#9AACB8")
+	// medium grey – dim / secondary text
+	clrDim = lipgloss.Color("#6A7580")
+	// near-white with cool tint – primary readable text
+	clrBright = lipgloss.Color("#DCE4EA")
+	// softer dusty blue – secondary accent (detail border, category badges)
+	clrSecond = lipgloss.Color("#89AABA")
+	// light dusty blue – hyperlinks
+	clrLink = lipgloss.Color("#9CC0D0")
 )
 
 // ─── Base styles ─────────────────────────────────────────────────────────────
 
 var (
-	headerStyle = lipgloss.NewStyle().Foreground(clrGreen).Bold(true)
-	subStyle    = lipgloss.NewStyle().Foreground(clrDim)
+	headerStyle = lipgloss.NewStyle().Foreground(clrAccent).Bold(true)
+	subStyle    = lipgloss.NewStyle().Foreground(clrDim) //nolint:unused
 
 	activeTabSty = lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("#FFFFFF")).
-			Background(clrPurple).
+			Background(lipgloss.Color("#4D7A96")).
 			Padding(0, 2)
 
 	inactiveTabSty = lipgloss.NewStyle().
 			Foreground(clrDim).
 			Padding(0, 2)
 
-	// Main content box — purple border
+	// Main content box – accent border
 	contentBoxSty = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(clrPurple).
+			BorderForeground(clrAccent).
 			Padding(1, 2)
 
-	// Detail panel box — amber border
+	// Detail panel box – secondary border
 	detailBoxSty = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(clrAmber).
+			BorderForeground(clrSecond).
 			Padding(1, 2)
 
-	sectionSty  = lipgloss.NewStyle().Foreground(clrGreen).Bold(true)
-	labelSty    = lipgloss.NewStyle().Foreground(clrAmber).Bold(true)
-	dimSty      = lipgloss.NewStyle().Foreground(clrDim)
-	brightSty   = lipgloss.NewStyle().Foreground(clrBright).Bold(true)
-	linkSty     = lipgloss.NewStyle().Foreground(clrCyan).Underline(true)
-	cursorSty   = lipgloss.NewStyle().Foreground(clrPurple).Bold(true)
-	footerSty   = lipgloss.NewStyle().Foreground(clrDim)
+	sectionSty = lipgloss.NewStyle().Foreground(clrSection).Bold(true)
+	labelSty   = lipgloss.NewStyle().Foreground(clrLabel).Bold(true)
+	dimSty     = lipgloss.NewStyle().Foreground(clrDim)
+	brightSty  = lipgloss.NewStyle().Foreground(clrBright).Bold(true)
+	linkSty    = lipgloss.NewStyle().Foreground(clrLink).Underline(true)
+	cursorSty  = lipgloss.NewStyle().Foreground(clrAccent).Bold(true)
+	footerSty  = lipgloss.NewStyle().Foreground(clrDim)
 
 	tagSty = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FFFFFF")).
-		Background(clrPurple).
+		Foreground(lipgloss.Color("#E8EEF2")).
+		Background(lipgloss.Color("#4D7A96")).
 		Padding(0, 1)
 
 	catSty = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FFFFFF")).
-		Background(clrIndigo).
+		Foreground(lipgloss.Color("#E8EEF2")).
+		Background(lipgloss.Color("#5D8EA6")).
 		Padding(0, 1)
 
-	spiralSty = lipgloss.NewStyle().Foreground(clrPurple)
+	spiralSty = lipgloss.NewStyle().Foreground(clrAccent)
 )
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -124,7 +131,6 @@ var projects = []project{
 	},
 }
 
-// sideProjects — update with real game dev titles as needed
 var sideProjects = []sideProject{
 	{
 		name:     "Indie Game Projects",
@@ -154,25 +160,21 @@ var sideProjects = []sideProject{
 
 // ─── OSC 8 hyperlink ─────────────────────────────────────────────────────────
 
-// osc8 wraps text in an OSC 8 hyperlink escape sequence.
-// In supporting terminals (iTerm2, WezTerm, etc.) the text becomes clickable.
-// Falls back gracefully to plain styled text in unsupported terminals.
 func osc8(url, text string) string {
 	return fmt.Sprintf("\x1b]8;;%s\x1b\\%s\x1b]8;;\x1b\\", url, text)
 }
 
-// clickLink renders a styled, clickable hyperlink.
 func clickLink(url string) string {
 	return osc8(url, linkSty.Render(url))
 }
 
-// ─── Spiral animation ────────────────────────────────────────────────────────
+// ─── Spiral animation (dynamic size + proportional rings) ────────────────────
 
-// renderSpiral draws a compact animated spiral (rows×cols character grid).
-func renderSpiral(frame int) string {
-	const rows, cols = 12, 22
-	var grid [rows][cols]rune
+// renderSpiral draws an animated concentric-ring spiral scaled to fit rows×cols.
+func renderSpiral(frame, rows, cols int) string {
+	grid := make([][]rune, rows)
 	for i := range grid {
+		grid[i] = make([]rune, cols)
 		for j := range grid[i] {
 			grid[i][j] = ' '
 		}
@@ -181,26 +183,37 @@ func renderSpiral(frame int) string {
 	cx := float64(cols) / 2.0
 	cy := float64(rows) / 2.0
 
-	type ring struct {
-		radius float64
-		dots   int
-		speed  float64
-		char   rune
+	// Maximum radius that fits within the grid.
+	// Horizontal positions are scaled ×2.1 to compensate for character aspect ratio.
+	maxR := math.Min(cy*0.88, (cx/2.1)*0.88)
+	if maxR < 1 {
+		maxR = 1
 	}
+
+	type ring struct {
+		frac  float64 // radius as fraction of maxR
+		dots  int
+		speed float64
+		char  rune
+	}
+
+	// Six rings spread from centre to edge; scale with maxR automatically.
 	rings := []ring{
-		{1.0, 5, 0.08, '·'},
-		{2.0, 9, 0.05, '•'},
-		{3.0, 14, 0.03, '●'},
-		{4.3, 20, 0.02, '•'},
-		{5.4, 27, 0.01, '·'},
+		{0.15, 6,  0.080, '·'},
+		{0.32, 11, 0.050, '•'},
+		{0.50, 18, 0.030, '●'},
+		{0.66, 26, 0.020, '•'},
+		{0.82, 36, 0.013, '·'},
+		{0.97, 48, 0.008, '·'},
 	}
 
 	for _, r := range rings {
+		radius := r.frac * maxR
 		phase := float64(frame) * r.speed
 		for d := 0; d < r.dots; d++ {
 			angle := (float64(d)/float64(r.dots))*2*math.Pi + phase
-			x := cx + r.radius*2.1*math.Cos(angle)
-			y := cy + r.radius*math.Sin(angle)
+			x := cx + radius*2.1*math.Cos(angle)
+			y := cy + radius*math.Sin(angle)
 			xi := int(math.Round(x))
 			yi := int(math.Round(y))
 			if yi >= 0 && yi < rows && xi >= 0 && xi < cols {
@@ -210,18 +223,69 @@ func renderSpiral(frame int) string {
 	}
 
 	var sb strings.Builder
-	for _, row := range grid {
-		sb.WriteString(string(row[:]) + "\n")
+	for i, row := range grid {
+		sb.WriteString(string(row))
+		if i < rows-1 {
+			sb.WriteByte('\n')
+		}
 	}
 	return sb.String()
+}
+
+// ─── Scroll helper ────────────────────────────────────────────────────────────
+
+// applyScroll slices content to a window of maxLines starting at offset.
+// If content is shorter than maxLines the result is padded with empty lines so
+// the surrounding box always renders at a consistent height.
+func applyScroll(content string, offset, maxLines int) string {
+	lines := strings.Split(content, "\n")
+	total := len(lines)
+
+	if offset < 0 {
+		offset = 0
+	}
+	if offset >= total {
+		offset = total - 1
+	}
+
+	end := offset + maxLines
+	if end > total {
+		end = total
+	}
+
+	sliced := append([]string(nil), lines[offset:end]...)
+
+	// Pad to maxLines so the box height stays constant while scrolling.
+	for len(sliced) < maxLines {
+		sliced = append(sliced, "")
+	}
+
+	return strings.Join(sliced, "\n")
+}
+
+// ─── Available content lines ──────────────────────────────────────────────────
+
+// contentAvailLines returns how many lines of inner content the box can display.
+func (m Model) contentAvailLines() int {
+	headerH := 5 // 4-line ASCII art + 1 blank breathing line
+	if m.width < 55 {
+		headerH = 1
+	}
+	// Overhead: header + 3 JoinVertical separators + tabbar(1) + footer(1)
+	//           + box border top+bottom(2) + box padding top+bottom(2)
+	avail := m.height - headerH - 3 - 1 - 1 - 2 - 2
+	if avail < 5 {
+		avail = 5
+	}
+	return avail
 }
 
 // ─── Top-level view ──────────────────────────────────────────────────────────
 
 func (m Model) View() string {
-	if m.width < 30 || m.height < 8 {
-		return lipgloss.NewStyle().Foreground(clrAmber).Render(
-			"\n  [ terminal too small — please resize ]",
+	if m.width < 61 || m.height < 30 {
+		return lipgloss.NewStyle().Foreground(clrLabel).Render(
+			"\n  [ terminal too small — please resize to at least 61×30 ]",
 		)
 	}
 	return lipgloss.JoinVertical(lipgloss.Left,
@@ -236,25 +300,23 @@ func (m Model) View() string {
 
 func (m Model) renderHeader() string {
 	if m.width < 55 {
-		// compact single-line header for narrow terminals
 		return headerStyle.Render("Nourin Awad")
 	}
 	ascii := ` ▗▖  ▗▖ ▄▄▄  █  ▐▌ ▄▄▄ ▄ ▄▄▄▄       ▗▄▖ ▄   ▄ ▗▞▀▜▌▐▌▄
  ▐▛▚▖▐▌█   █ ▀▄▄▞▘█    ▄ █   █     ▐▌ ▐▌█ ▄ █ ▝▚▄▟▌▐▌  
  ▐▌ ▝▜▌▀▄▄▄▀      █    █ █   █     ▐▛▀▜▌█▄█▄█   ▗▞▀▜▌  
  ▐▌  ▐▌                █           ▐▌ ▐▌        ▝▚▄▟▌  `
-	return headerStyle.Render(ascii)
+	return headerStyle.Render(ascii) + "\n"
 }
 
 // ─── Tab bar ──────────────────────────────────────────────────────────────────
 
 func (m Model) renderTabBar() string {
-	// Use short names when the terminal is narrow
 	names := m.tabs
-	if m.width < 65 {
+	if m.width < 70 {
 		names = []string{"About", "Proj", "Side", "Skills", "Exp", "Contact"}
 	}
-	if m.width < 48 {
+	if m.width < 54 {
 		names = []string{"Abt", "Prj", "Sid", "Skl", "Exp", "Cnt"}
 	}
 
@@ -271,37 +333,53 @@ func (m Model) renderTabBar() string {
 
 // ─── Middle (spiral + content) ────────────────────────────────────────────────
 
-const sidebarW = 26 // spiral sidebar fixed width
+const sidebarW = 26 // spiral sidebar fixed character width
 
 func (m Model) renderMiddle() string {
-	// Choose box style: amber border for detail panels, purple otherwise
 	boxSty := contentBoxSty
 	if m.detailOpen {
 		boxSty = detailBoxSty
 	}
 
+	avail := m.contentAvailLines()
+
 	if m.width < 72 {
-		// Narrow layout: no spiral, content fills full width
-		inner := m.width - 8 // border (2) + padding (4) + margin (2)
+		// Narrow layout: no spiral, content fills full width.
+		inner := m.width - 8
 		if inner < 10 {
 			inner = 10
 		}
-		return boxSty.Width(m.width - 2).Render(m.renderContent(inner))
+		full := m.renderContent(inner)
+		shown := applyScroll(full, m.scrollOffset, avail)
+		return boxSty.Width(m.width - 2).Render(shown)
 	}
 
-	// Wide layout: spiral on left, content on right
-	spiral := spiralSty.
-		Width(sidebarW).
-		Padding(1, 1).
-		Render(renderSpiral(m.frame))
-
+	// Wide layout: spiral on left, scrollable content on right.
 	contentW := m.width - sidebarW - 2
-	inner := contentW - 8 // border + padding overhead
+	inner := contentW - 8
 	if inner < 10 {
 		inner = 10
 	}
 
-	content := boxSty.Width(contentW).Render(m.renderContent(inner))
+	full := m.renderContent(inner)
+	shown := applyScroll(full, m.scrollOffset, avail)
+
+	// Make spiral exactly as tall as the content box.
+	//   content box total height = avail + border(2) + padding(2) = avail + 4
+	//   spiral panel total height = spiralRows + padding top+bottom(2)
+	//   → spiralRows = avail + 2
+	spiralRows := avail + 2
+	if spiralRows < 8 {
+		spiralRows = 8
+	}
+	const spiralCols = 22 // fits within sidebarW(26) with padding(1,1)
+
+	spiral := spiralSty.
+		Width(sidebarW).
+		Padding(1, 1).
+		Render(renderSpiral(m.frame, spiralRows, spiralCols))
+
+	content := boxSty.Width(contentW).Render(shown)
 	return lipgloss.JoinHorizontal(lipgloss.Top, spiral, content)
 }
 
@@ -340,7 +418,7 @@ func (m Model) renderAbout(w int) string {
 	b.WriteString("  " + labelSty.Render("Mansoura University") + "\n")
 	b.WriteString("  BE · Communications & Computer Engineering\n")
 	b.WriteString("  " + dimSty.Render("Sep 2022 – Present") + "   " +
-		lipgloss.NewStyle().Foreground(clrGreen).Render("GPA: 3.95 / 4.0") + "\n\n")
+		lipgloss.NewStyle().Foreground(clrSection).Render("GPA: 3.95 / 4.0") + "\n\n")
 
 	b.WriteString(sectionSty.Render("◆ Extracurriculars") + "\n\n")
 	b.WriteString("  " + labelSty.Render("IEEE Mansoura Student Branch") + "\n")
@@ -380,7 +458,7 @@ func (m Model) renderProjects(w int) string {
 
 		b.WriteString(pfx + nameSty.Render(p.name) + "\n")
 		b.WriteString("    " + dimSty.Render(p.short) + "\n")
-		b.WriteString("    " + lipgloss.NewStyle().Foreground(clrIndigo).Render(p.tech) + "\n\n")
+		b.WriteString("    " + lipgloss.NewStyle().Foreground(clrSecond).Render(p.tech) + "\n\n")
 	}
 
 	return b.String()
@@ -396,7 +474,7 @@ func (m Model) renderProjectDetail(idx int) string {
 	b.WriteString(dimSty.Render("esc · back to projects") + "\n\n")
 
 	b.WriteString(labelSty.Render(p.name) + "\n")
-	b.WriteString(lipgloss.NewStyle().Foreground(clrIndigo).Render(p.tech) + "\n\n")
+	b.WriteString(lipgloss.NewStyle().Foreground(clrSecond).Render(p.tech) + "\n\n")
 
 	b.WriteString(sectionSty.Render("About") + "\n")
 	b.WriteString("  " + p.short + "\n\n")
@@ -408,7 +486,7 @@ func (m Model) renderProjectDetail(idx int) string {
 
 	b.WriteString("\n" + sectionSty.Render("Repository") + "\n")
 	b.WriteString("  " + clickLink(p.github) + "\n")
-	b.WriteString("  " + dimSty.Render("ctrl+click to open in browser (supported in iTerm2, WezTerm, etc.)") + "\n")
+	b.WriteString("  " + dimSty.Render("ctrl+click to open in browser (iTerm2, WezTerm, etc.)") + "\n")
 
 	return b.String()
 }
@@ -599,7 +677,7 @@ func (m Model) renderContact(w int) string {
 	}
 
 	b.WriteString(dimSty.Render(
-		"  ctrl+click any link above to open  ·  supported in iTerm2, WezTerm, Kitty, etc.",
+		"  ctrl+click any link to open  ·  iTerm2, WezTerm, Kitty, etc.",
 	) + "\n")
 
 	return b.String()
@@ -611,11 +689,17 @@ func (m Model) renderFooter() string {
 	var hint string
 	switch {
 	case m.detailOpen:
-		hint = "esc back   q quit"
+		hint = "↑↓ scroll   esc back   q quit"
 	case m.activeTab == 1 || m.activeTab == 2:
-		hint = "← → tabs   ↑↓ select   enter open   esc back   q quit"
+		hint = "← → tabs   ↑↓ select   enter open   q quit"
 	default:
-		hint = "← → tabs   q quit"
+		hint = "← → tabs   ↑↓ scroll   q quit"
 	}
-	return footerSty.Render("  " + hint)
+
+	suffix := ""
+	if m.scrollOffset > 0 {
+		suffix = fmt.Sprintf("   [+%d]", m.scrollOffset)
+	}
+
+	return footerSty.Render("  " + hint + suffix)
 }

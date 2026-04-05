@@ -17,34 +17,50 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if !m.detailOpen {
 				m.activeTab = (m.activeTab + 1) % len(m.tabs)
 				m.cursor = 0
+				m.scrollOffset = 0
 			}
 		case "left", "h", "shift+tab":
 			if !m.detailOpen {
 				m.activeTab = (m.activeTab - 1 + len(m.tabs)) % len(m.tabs)
 				m.cursor = 0
+				m.scrollOffset = 0
 			}
 
-		// ── item navigation ───────────────────────────────────────────────
+		// ── up: cursor in list tabs, scroll elsewhere ─────────────────────
 		case "up", "k":
-			if !m.detailOpen && m.cursor > 0 {
-				m.cursor--
+			if !m.detailOpen && m.isListTab() {
+				if m.cursor > 0 {
+					m.cursor--
+				}
+			} else {
+				if m.scrollOffset > 0 {
+					m.scrollOffset--
+				}
 			}
+
+		// ── down: cursor in list tabs, scroll elsewhere ───────────────────
 		case "down", "j":
-			if !m.detailOpen {
+			if !m.detailOpen && m.isListTab() {
 				if m.cursor < m.maxCursor() {
 					m.cursor++
 				}
+			} else {
+				m.scrollOffset++ // clamped in view via applyScroll
 			}
 
 		// ── open detail ───────────────────────────────────────────────────
 		case "enter", " ":
-			if !m.detailOpen && (m.activeTab == 1 || m.activeTab == 2) {
+			if !m.detailOpen && m.isListTab() {
 				m.detailOpen = true
+				m.scrollOffset = 0
 			}
 
 		// ── close detail ──────────────────────────────────────────────────
 		case "esc", "b", "backspace":
-			m.detailOpen = false
+			if m.detailOpen {
+				m.detailOpen = false
+				m.scrollOffset = 0
+			}
 		}
 
 	case tickMsg:
@@ -54,13 +70,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		// Safety: clamp cursor after resize
 		if m.cursor > m.maxCursor() {
 			m.cursor = m.maxCursor()
 		}
 	}
 
 	return m, nil
+}
+
+// isListTab returns true for tabs that use cursor-based navigation.
+func (m Model) isListTab() bool {
+	return m.activeTab == 1 || m.activeTab == 2
 }
 
 // maxCursor returns the highest valid cursor index for the active tab.
