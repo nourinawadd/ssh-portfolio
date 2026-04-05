@@ -1,38 +1,35 @@
 package ui
 
 import (
-    "time"
-    tea "github.com/charmbracelet/bubbletea"
+	"time"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Model struct {
-    width     int
-    height    int
-    activeTab int
-    tabs      []string
-    cursor    int
-    frame     int
+	width      int
+	height     int
+	activeTab  int
+	tabs       []string
+	cursor     int
+	frame      int 
+	detailOpen bool 
 }
 
 func NewModel(width, height int) Model {
-    return Model{
-        width:     width,
-        height:    height,
-        activeTab: 0,
-        tabs:      []string{"About", "Projects", "Skills", "Contact"},
-        cursor:    0,
-        frame:     0,
-    }
+	return Model{
+		width:  width,
+		height: height,
+		tabs:   []string{"About", "Projects", "Side Projects", "Skills", "Experience", "Contact"},
+	}
 }
 
-func (m Model) Init() tea.Cmd {
-    return tickCmd()
-}
+func (m Model) Init() tea.Cmd { return tickCmd() }
 
 type tickMsg time.Time
 
 func tickCmd() tea.Cmd {
-    return tea.Tick(time.Millisecond*80, func(t time.Time) tea.Msg {
-        return tickMsg(t)
-    })
+	return tea.Tick(80*time.Millisecond, func(t time.Time) tea.Msg {
+		return tickMsg(t)
+	})
 }
