@@ -1,60 +1,64 @@
+
 package main
 
 import (
-    "context"
-    "log"
-    "os"
-    "os/signal"
-    "syscall"
-    "time"
+	"context"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-    tea "github.com/charmbracelet/bubbletea"
-    "github.com/charmbracelet/wish"
-    "github.com/charmbracelet/wish/bubbletea"
-    "github.com/charmbracelet/ssh"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/ssh"
+	"github.com/charmbracelet/wish"
+	bm "github.com/charmbracelet/wish/bubbletea"
+
 	"github.com/nourinawadd/ssh-portfolio/ui"
 )
 
-const (
-    host = "0.0.0.0"
-    port = "22"
-)
-
 func main() {
-    s, err := wish.NewServer(
-        wish.WithAddress(host+":"+port),
-        wish.WithHostKeyPath(".ssh/id_ed25519"),
-        wish.WithMiddleware(
-            bubbletea.Middleware(teaHandler),
-        ),
-    )
-    if err != nil {
-        log.Fatal("Could not create server:", err)
-    }
-    done := make(chan os.Signal, 1)
-    signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	s, err := wish.NewServer(
+		wish.WithAddress(":2323"),
+		wish.WithHostKeyPath("/home/ubuntu/.ssh/id_ed25519"),
+		wish.WithMiddleware(
+			bm.Middleware(func(s ssh.Session) (tea.Model, []tea.ProgramOption) {
+				pty, _, _ := s.Pty()
 
-    log.Printf("SSH server listening on %s:%s", host, port)
-    go func() {
-        if err := s.ListenAndServe(); err != nil {
-            log.Fatal(err)
-        }
-    }()
+				width := 80
+				height := 24
 
-    <-done
-    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-    defer cancel()
-    s.Shutdown(ctx)
-}
+				if pty.Window.Width > 0 {
+					width = pty.Window.Width
+				}
+				if pty.Window.Height > 0 {
+					height = pty.Window.Height
+				}
 
-func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
-    pty, _, _ := s.Pty()
-    width := pty.Window.Width
-    height := pty.Window.Height
+				m := ui.NewModel(width, height)
+				return m, []tea.ProgramOption{tea.WithAltScreen()}
+			}),
+		),
+	)
+	if err != nil {
+		log.Fatal("could not create server:", err)
+	}
 
-    m := ui.NewModel(width, height)
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-    return m, []tea.ProgramOption{
-        tea.WithAltScreen(),
-    }
+	log.Println("SSH portfolio listening on :2323")
+	go func() {
+		if err := s.ListenAndServe(); err != nil {
+			log.Fatal("server error:", err)
+		}
+	}()
+
+	<-done
+	log.Println("shutting down...")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if err := s.Shutdown(ctx); err != nil {
+		log.Fatal("shutdown error:", err)
+	}
 }
