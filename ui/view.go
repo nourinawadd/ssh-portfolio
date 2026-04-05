@@ -95,6 +95,7 @@ var projects = []project{
 			"MongoDB/Mongoose schema across 3 collections with referential integrity",
 		},
 		github: "https://github.com/nourinawadd/subscriptions-tracker-api",
+		github: "https://github.com/nourinawadd/subscriptions-tracker-api",
 	},
 	{
 		name:  "Social Feed App",
@@ -105,6 +106,7 @@ var projects = []project{
 			"JWT authentication + RESTful API with Express/MongoDB backend",
 			"Angular SPA with HttpClient for API calls & responsive Bootstrap UI",
 		},
+		github: "https://github.com/nourinawadd/mean-social-feed-app",
 		github: "https://github.com/nourinawadd/mean-social-feed-app",
 	},
 }
@@ -118,6 +120,7 @@ var sideProjects = []sideProject{
 			"Various indie games built as personal passion projects",
 			"Exploring mechanics, art direction, and interactive storytelling",
 			"Released under Sifr Studios, source available on GitHub",
+			"Released under Sifr Studios, source available on GitHub",
 		},
 		link:   "https://sifrstudios.itch.io/",
 		github: "https://github.com/nourinawadd",
@@ -127,8 +130,10 @@ var sideProjects = []sideProject{
 		name:     "Behance Portfolio",
 		category: "Graphic Design",
 		short:    "Visual design work: branding, illustration, animation",
+		short:    "Visual design work: branding, illustration, animation",
 		bullets: []string{
 			"Branding, logo design, and visual identity projects",
+			"3D modelling and animation projects",
 			"3D modelling and animation projects",
 			"Digital illustrations and creative compositions",
 		},
@@ -258,6 +263,7 @@ func (m Model) renderHeader() string {
 		return headerStyle.Render("Nourin Awad")
 	}
 	ascii := ` ▗▖  ▗▖ ▄▄▄  █  ▐▌ ▄▄▄ ▄ ▄▄▄▄       ▗▄▖ ▄   ▄ ▗▞▀▜▌▐▌
+	ascii := ` ▗▖  ▗▖ ▄▄▄  █  ▐▌ ▄▄▄ ▄ ▄▄▄▄       ▗▄▖ ▄   ▄ ▗▞▀▜▌▐▌
  ▐▛▚▖▐▌█   █ ▀▄▄▞▘█    ▄ █   █     ▐▌ ▐▌█ ▄ █ ▝▚▄▟▌▐▌  
  ▐▌ ▝▜▌▀▄▄▄▀      █    █ █   █     ▐▛▀▜▌█▄█▄█   ▗▞▀▜▌  
  ▐▌  ▐▌                █           ▐▌ ▐▌        ▝▚▄▟▌  `
@@ -368,6 +374,8 @@ func (m Model) renderAbout(w int) string {
 	b.WriteString("  managing system setup across 4 tracks.\n\n")
 
 	b.WriteString(sectionSty.Render("◆ Languages") + "\n\n")
+	sep := dimSty.Render("  ·  ")
+	b.WriteString("  " + tagSty.Render("English · Fluent") + sep + tagSty.Render("Arabic · Native") + "\n")
 	sep := dimSty.Render("  ·  ")
 	b.WriteString("  " + tagSty.Render("English · Fluent") + sep + tagSty.Render("Arabic · Native") + "\n")
 
@@ -534,7 +542,9 @@ func (m Model) renderSkills(w int) string {
 		var parts []string
 		for _, item := range s.items {
 			parts = append(parts, tagSty.Render(item))
+			parts = append(parts, tagSty.Render(item))
 		}
+		b.WriteString("  " + strings.Join(parts, sep) + "\n\n")
 		b.WriteString("  " + strings.Join(parts, sep) + "\n\n")
 	}
 
