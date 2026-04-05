@@ -8,30 +8,18 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// ─── Palette ──────────────────────────────────────────────────────────────────
-
 var (
-	// dusty sky-blue – name, active borders, accent elements
-	clrAccent = lipgloss.Color("#7BADC0")
-	// pale blue-grey – section headers  (◆ headings)
+	clrAccent  = lipgloss.Color("#7BADC0")
 	clrSection = lipgloss.Color("#B8C8D4")
-	// muted blue-grey – labels, tech stacks
-	clrLabel = lipgloss.Color("#9AACB8")
-	// medium grey – dim / secondary text
-	clrDim = lipgloss.Color("#6A7580")
-	// near-white with cool tint – primary readable text
-	clrBright = lipgloss.Color("#DCE4EA")
-	// softer dusty blue – secondary accent (detail border, category badges)
-	clrSecond = lipgloss.Color("#89AABA")
-	// light dusty blue – hyperlinks
-	clrLink = lipgloss.Color("#9CC0D0")
+	clrLabel   = lipgloss.Color("#9AACB8")
+	clrDim     = lipgloss.Color("#6A7580")
+	clrBright  = lipgloss.Color("#DCE4EA")
+	clrSecond  = lipgloss.Color("#89AABA")
+	clrLink    = lipgloss.Color("#9CC0D0")
 )
-
-// ─── Base styles ─────────────────────────────────────────────────────────────
 
 var (
 	headerStyle = lipgloss.NewStyle().Foreground(clrAccent).Bold(true)
-	subStyle    = lipgloss.NewStyle().Foreground(clrDim) //nolint:unused
 
 	activeTabSty = lipgloss.NewStyle().
 			Bold(true).
@@ -43,13 +31,11 @@ var (
 			Foreground(clrDim).
 			Padding(0, 2)
 
-	// Main content box – accent border
 	contentBoxSty = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(clrAccent).
 			Padding(1, 2)
 
-	// Detail panel box – secondary border
 	detailBoxSty = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(clrSecond).
@@ -62,27 +48,17 @@ var (
 	linkSty    = lipgloss.NewStyle().Foreground(clrLink).Underline(true)
 	cursorSty  = lipgloss.NewStyle().Foreground(clrAccent).Bold(true)
 	footerSty  = lipgloss.NewStyle().Foreground(clrDim)
-
-	tagSty = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#E8EEF2")).
-		Background(lipgloss.Color("#4D7A96")).
-		Padding(0, 1)
-
-	catSty = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#E8EEF2")).
-		Background(lipgloss.Color("#5D8EA6")).
-		Padding(0, 1)
-
-	spiralSty = lipgloss.NewStyle().Foreground(clrAccent)
+	tagSty     = lipgloss.NewStyle().Foreground(clrSecond)
+	catSty     = lipgloss.NewStyle().Foreground(clrAccent).Bold(true)
+	spiralSty  = lipgloss.NewStyle().Foreground(clrAccent)
 )
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
 
 type project struct {
 	name    string
 	tech    string
 	short   string
 	bullets []string
+	live    string
 	github  string
 }
 
@@ -92,6 +68,8 @@ type sideProject struct {
 	short    string
 	bullets  []string
 	link     string
+	github   string
+	ig       string
 	tags     []string
 }
 
@@ -105,7 +83,7 @@ var projects = []project{
 			"Node.js cron jobs + MongoDB for time-based scheduling & delivery logic",
 			"React frontend with Express/MongoDB backend for auth & note management",
 		},
-		github: "https://github.com/nourinawadd",
+		live: "https://tethernote.vercel.app/",
 	},
 	{
 		name:  "Subscriptions Tracker API",
@@ -116,7 +94,7 @@ var projects = []project{
 			"JWT authentication with bcrypt hashing and role-based access control",
 			"MongoDB/Mongoose schema across 3 collections with referential integrity",
 		},
-		github: "https://github.com/nourinawadd",
+		github: "https://github.com/nourinawadd/subscriptions-tracker-api",
 	},
 	{
 		name:  "Social Feed App",
@@ -127,7 +105,7 @@ var projects = []project{
 			"JWT authentication + RESTful API with Express/MongoDB backend",
 			"Angular SPA with HttpClient for API calls & responsive Bootstrap UI",
 		},
-		github: "https://github.com/nourinawadd",
+		github: "https://github.com/nourinawadd/mean-social-feed-app",
 	},
 }
 
@@ -139,38 +117,35 @@ var sideProjects = []sideProject{
 		bullets: []string{
 			"Various indie games built as personal passion projects",
 			"Exploring mechanics, art direction, and interactive storytelling",
-			"Source available on GitHub — check the link below",
+			"Released under Sifr Studios, source available on GitHub",
 		},
-		link: "https://github.com/nourinawadd",
-		tags: []string{"Game Dev", "Unity", "C#", "Indie"},
+		link:   "https://sifrstudios.itch.io/",
+		github: "https://github.com/nourinawadd",
+		tags:   []string{"Game Dev", "Unity", "C#", "Indie"},
 	},
 	{
 		name:     "Behance Portfolio",
 		category: "Graphic Design",
-		short:    "Visual design work: branding, UI, illustration",
+		short:    "Visual design work: branding, illustration, animation",
 		bullets: []string{
 			"Branding, logo design, and visual identity projects",
-			"UI/UX mockups and interface design explorations",
+			"3D modelling and animation projects",
 			"Digital illustrations and creative compositions",
 		},
 		link: "https://www.behance.net/nourinawadd",
+		ig:   "https://www.instagram.com/diarydump.jpg/",
 		tags: []string{"Graphic Design", "Branding", "UI/UX", "Illustration"},
 	},
 }
-
-// ─── OSC 8 hyperlink ─────────────────────────────────────────────────────────
 
 func osc8(url, text string) string {
 	return fmt.Sprintf("\x1b]8;;%s\x1b\\%s\x1b]8;;\x1b\\", url, text)
 }
 
-func clickLink(url string) string {
-	return osc8(url, linkSty.Render(url))
+func clickLink(label, url string) string {
+	return osc8(url, linkSty.Render(label))
 }
 
-// ─── Spiral animation (dynamic size + proportional rings) ────────────────────
-
-// renderSpiral draws an animated concentric-ring spiral scaled to fit rows×cols.
 func renderSpiral(frame, rows, cols int) string {
 	grid := make([][]rune, rows)
 	for i := range grid {
@@ -183,23 +158,20 @@ func renderSpiral(frame, rows, cols int) string {
 	cx := float64(cols) / 2.0
 	cy := float64(rows) / 2.0
 
-	// Maximum radius that fits within the grid.
-	// Horizontal positions are scaled ×2.1 to compensate for character aspect ratio.
 	maxR := math.Min(cy*0.88, (cx/2.1)*0.88)
 	if maxR < 1 {
 		maxR = 1
 	}
 
 	type ring struct {
-		frac  float64 // radius as fraction of maxR
+		frac  float64
 		dots  int
 		speed float64
 		char  rune
 	}
 
-	// Six rings spread from centre to edge; scale with maxR automatically.
 	rings := []ring{
-		{0.15, 6,  0.080, '·'},
+		{0.15, 6, 0.080, '·'},
 		{0.32, 11, 0.050, '•'},
 		{0.50, 18, 0.030, '●'},
 		{0.66, 26, 0.020, '•'},
@@ -232,11 +204,6 @@ func renderSpiral(frame, rows, cols int) string {
 	return sb.String()
 }
 
-// ─── Scroll helper ────────────────────────────────────────────────────────────
-
-// applyScroll slices content to a window of maxLines starting at offset.
-// If content is shorter than maxLines the result is padded with empty lines so
-// the surrounding box always renders at a consistent height.
 func applyScroll(content string, offset, maxLines int) string {
 	lines := strings.Split(content, "\n")
 	total := len(lines)
@@ -254,33 +221,23 @@ func applyScroll(content string, offset, maxLines int) string {
 	}
 
 	sliced := append([]string(nil), lines[offset:end]...)
-
-	// Pad to maxLines so the box height stays constant while scrolling.
 	for len(sliced) < maxLines {
 		sliced = append(sliced, "")
 	}
-
 	return strings.Join(sliced, "\n")
 }
 
-// ─── Available content lines ──────────────────────────────────────────────────
-
-// contentAvailLines returns how many lines of inner content the box can display.
 func (m Model) contentAvailLines() int {
-	headerH := 5 // 4-line ASCII art + 1 blank breathing line
+	headerH := 5
 	if m.width < 55 {
 		headerH = 1
 	}
-	// Overhead: header + 3 JoinVertical separators + tabbar(1) + footer(1)
-	//           + box border top+bottom(2) + box padding top+bottom(2)
 	avail := m.height - headerH - 3 - 1 - 1 - 2 - 2
 	if avail < 5 {
 		avail = 5
 	}
 	return avail
 }
-
-// ─── Top-level view ──────────────────────────────────────────────────────────
 
 func (m Model) View() string {
 	if m.width < 61 || m.height < 30 {
@@ -296,20 +253,16 @@ func (m Model) View() string {
 	)
 }
 
-// ─── Header ───────────────────────────────────────────────────────────────────
-
 func (m Model) renderHeader() string {
 	if m.width < 55 {
 		return headerStyle.Render("Nourin Awad")
 	}
-	ascii := ` ▗▖  ▗▖ ▄▄▄  █  ▐▌ ▄▄▄ ▄ ▄▄▄▄       ▗▄▖ ▄   ▄ ▗▞▀▜▌▐▌▄
+	ascii := ` ▗▖  ▗▖ ▄▄▄  █  ▐▌ ▄▄▄ ▄ ▄▄▄▄       ▗▄▖ ▄   ▄ ▗▞▀▜▌▐▌
  ▐▛▚▖▐▌█   █ ▀▄▄▞▘█    ▄ █   █     ▐▌ ▐▌█ ▄ █ ▝▚▄▟▌▐▌  
  ▐▌ ▝▜▌▀▄▄▄▀      █    █ █   █     ▐▛▀▜▌█▄█▄█   ▗▞▀▜▌  
  ▐▌  ▐▌                █           ▐▌ ▐▌        ▝▚▄▟▌  `
 	return headerStyle.Render(ascii) + "\n"
 }
-
-// ─── Tab bar ──────────────────────────────────────────────────────────────────
 
 func (m Model) renderTabBar() string {
 	names := m.tabs
@@ -331,9 +284,7 @@ func (m Model) renderTabBar() string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, tabs...)
 }
 
-// ─── Middle (spiral + content) ────────────────────────────────────────────────
-
-const sidebarW = 26 // spiral sidebar fixed character width
+const sidebarW = 26
 
 func (m Model) renderMiddle() string {
 	boxSty := contentBoxSty
@@ -344,7 +295,6 @@ func (m Model) renderMiddle() string {
 	avail := m.contentAvailLines()
 
 	if m.width < 72 {
-		// Narrow layout: no spiral, content fills full width.
 		inner := m.width - 8
 		if inner < 10 {
 			inner = 10
@@ -354,7 +304,6 @@ func (m Model) renderMiddle() string {
 		return boxSty.Width(m.width - 2).Render(shown)
 	}
 
-	// Wide layout: spiral on left, scrollable content on right.
 	contentW := m.width - sidebarW - 2
 	inner := contentW - 8
 	if inner < 10 {
@@ -364,15 +313,11 @@ func (m Model) renderMiddle() string {
 	full := m.renderContent(inner)
 	shown := applyScroll(full, m.scrollOffset, avail)
 
-	// Make spiral exactly as tall as the content box.
-	//   content box total height = avail + border(2) + padding(2) = avail + 4
-	//   spiral panel total height = spiralRows + padding top+bottom(2)
-	//   → spiralRows = avail + 2
 	spiralRows := avail + 2
 	if spiralRows < 8 {
 		spiralRows = 8
 	}
-	const spiralCols = 22 // fits within sidebarW(26) with padding(1,1)
+	const spiralCols = 22
 
 	spiral := spiralSty.
 		Width(sidebarW).
@@ -382,8 +327,6 @@ func (m Model) renderMiddle() string {
 	content := boxSty.Width(contentW).Render(shown)
 	return lipgloss.JoinHorizontal(lipgloss.Top, spiral, content)
 }
-
-// ─── Content router ───────────────────────────────────────────────────────────
 
 func (m Model) renderContent(w int) string {
 	switch m.activeTab {
@@ -403,16 +346,14 @@ func (m Model) renderContent(w int) string {
 	return ""
 }
 
-// ─── About ────────────────────────────────────────────────────────────────────
-
 func (m Model) renderAbout(w int) string {
 	var b strings.Builder
 
 	b.WriteString(sectionSty.Render("◆ About Me") + "\n\n")
-	b.WriteString("  Backend developer from Mansoura, Egypt. I build scalable\n")
-	b.WriteString("  systems and clean APIs, primarily with Node.js and .NET.\n\n")
+	b.WriteString("  Backend developer based in Mansoura, Egypt. I build scalable\n")
+	b.WriteString("  systems and clean APIs, primarily with Node.js.\n\n")
 	b.WriteString("  Studying Communications & Computer Engineering at\n")
-	b.WriteString("  Mansoura University (GPA: 3.95 / 4.0).\n\n")
+	b.WriteString("  Mansoura University.\n\n")
 
 	b.WriteString(sectionSty.Render("◆ Education") + "\n\n")
 	b.WriteString("  " + labelSty.Render("Mansoura University") + "\n")
@@ -427,13 +368,11 @@ func (m Model) renderAbout(w int) string {
 	b.WriteString("  managing system setup across 4 tracks.\n\n")
 
 	b.WriteString(sectionSty.Render("◆ Languages") + "\n\n")
-	b.WriteString("  " + tagSty.Render("English · Fluent") + "  " +
-		tagSty.Render("Arabic · Native") + "\n")
+	sep := dimSty.Render("  ·  ")
+	b.WriteString("  " + tagSty.Render("English · Fluent") + sep + tagSty.Render("Arabic · Native") + "\n")
 
 	return b.String()
 }
-
-// ─── Projects ─────────────────────────────────────────────────────────────────
 
 func (m Model) renderProjects(w int) string {
 	if m.detailOpen {
@@ -484,14 +423,17 @@ func (m Model) renderProjectDetail(idx int) string {
 		b.WriteString("  " + cursorSty.Render("▸") + " " + bullet + "\n")
 	}
 
-	b.WriteString("\n" + sectionSty.Render("Repository") + "\n")
-	b.WriteString("  " + clickLink(p.github) + "\n")
-	b.WriteString("  " + dimSty.Render("ctrl+click to open in browser (iTerm2, WezTerm, etc.)") + "\n")
+	b.WriteString("\n" + sectionSty.Render("Links") + "\n")
+	if p.live != "" {
+		b.WriteString("  " + labelSty.Render("Live:  ") + clickLink(p.live, p.live) + "\n")
+	}
+	if p.github != "" {
+		b.WriteString("  " + labelSty.Render("Repo:  ") + clickLink(p.github, p.github) + "\n")
+	}
+	b.WriteString("  " + dimSty.Render("ctrl+click to open  ·  iTerm2, WezTerm, Kitty") + "\n")
 
 	return b.String()
 }
-
-// ─── Side Projects ────────────────────────────────────────────────────────────
 
 func (m Model) renderSideProjects(w int) string {
 	if m.detailOpen {
@@ -541,19 +483,28 @@ func (m Model) renderSideProjectDetail(idx int) string {
 		b.WriteString("  " + cursorSty.Render("▸") + " " + bullet + "\n")
 	}
 
-	b.WriteString("\n" + sectionSty.Render("Tags") + "\n  ")
+	sep := dimSty.Render("  ·  ")
+	var parts []string
 	for _, tag := range sp.tags {
-		b.WriteString(tagSty.Render(tag) + " ")
+		parts = append(parts, tagSty.Render(tag))
 	}
+	b.WriteString("\n" + sectionSty.Render("Tags") + "\n")
+	b.WriteString("  " + strings.Join(parts, sep) + "\n")
 
-	b.WriteString("\n\n" + sectionSty.Render("Link") + "\n")
-	b.WriteString("  " + clickLink(sp.link) + "\n")
-	b.WriteString("  " + dimSty.Render("ctrl+click to open in browser") + "\n")
+	b.WriteString("\n" + sectionSty.Render("Links") + "\n")
+	if sp.link != "" {
+		b.WriteString("  " + labelSty.Render("Site:  ") + clickLink(sp.link, sp.link) + "\n")
+	}
+	if sp.github != "" {
+		b.WriteString("  " + labelSty.Render("Repo:  ") + clickLink(sp.github, sp.github) + "\n")
+	}
+	if sp.ig != "" {
+		b.WriteString("  " + labelSty.Render("Insta: ") + clickLink(sp.ig, sp.ig) + "\n")
+	}
+	b.WriteString("  " + dimSty.Render("ctrl+click to open  ·  iTerm2, WezTerm, Kitty") + "\n")
 
 	return b.String()
 }
-
-// ─── Skills ───────────────────────────────────────────────────────────────────
 
 func (m Model) renderSkills(w int) string {
 	var b strings.Builder
@@ -577,18 +528,18 @@ func (m Model) renderSkills(w int) string {
 		},
 	}
 
+	sep := dimSty.Render("  ·  ")
 	for _, s := range sections {
-		b.WriteString("  " + labelSty.Render(s.label) + "\n  ")
+		b.WriteString("  " + labelSty.Render(s.label) + "\n")
+		var parts []string
 		for _, item := range s.items {
-			b.WriteString(tagSty.Render(item) + " ")
+			parts = append(parts, tagSty.Render(item))
 		}
-		b.WriteString("\n\n")
+		b.WriteString("  " + strings.Join(parts, sep) + "\n\n")
 	}
 
 	return b.String()
 }
-
-// ─── Experience ───────────────────────────────────────────────────────────────
 
 func (m Model) renderExperience(w int) string {
 	type job struct {
@@ -639,8 +590,7 @@ func (m Model) renderExperience(w int) string {
 
 	for _, j := range jobs {
 		b.WriteString("  " + labelSty.Render(j.company) + "\n")
-		b.WriteString("  " + brightSty.Render(j.role) +
-			"  " + dimSty.Render(j.period) + "\n")
+		b.WriteString("  " + brightSty.Render(j.role) + "  " + dimSty.Render(j.period) + "\n")
 		b.WriteString("  " + dimSty.Render(j.location) + "\n")
 		for _, bullet := range j.bullets {
 			b.WriteString("  " + cursorSty.Render("▸") + " " + bullet + "\n")
@@ -650,8 +600,6 @@ func (m Model) renderExperience(w int) string {
 
 	return b.String()
 }
-
-// ─── Contact ──────────────────────────────────────────────────────────────────
 
 func (m Model) renderContact(w int) string {
 	type entry struct {
@@ -682,8 +630,6 @@ func (m Model) renderContact(w int) string {
 
 	return b.String()
 }
-
-// ─── Footer ───────────────────────────────────────────────────────────────────
 
 func (m Model) renderFooter() string {
 	var hint string
