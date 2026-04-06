@@ -6,7 +6,8 @@ a terminal-based portfolio you can ssh into. built with go using [bubbletea](htt
 ssh nourin.is-a.dev -p 2323
 ```
 
-![demo](assets/demo.gif)
+![demo](https://github.com/user-attachments/assets/2fb4efcf-fbf1-4193-8f92-1e6f05ed36a9)
+
 
 ---
 
