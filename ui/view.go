@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"math"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -50,7 +49,7 @@ var (
 	footerSty  = lipgloss.NewStyle().Foreground(clrDim)
 	tagSty     = lipgloss.NewStyle().Foreground(clrSecond)
 	catSty     = lipgloss.NewStyle().Foreground(clrAccent).Bold(true)
-	spiralSty  = lipgloss.NewStyle().Foreground(clrAccent)
+	starSty    = lipgloss.NewStyle().Foreground(clrAccent)
 )
 
 type project struct {
@@ -144,64 +143,6 @@ func osc8(url, text string) string {
 
 func clickLink(label, url string) string {
 	return osc8(url, linkSty.Render(label))
-}
-
-func renderSpiral(frame, rows, cols int) string {
-	grid := make([][]rune, rows)
-	for i := range grid {
-		grid[i] = make([]rune, cols)
-		for j := range grid[i] {
-			grid[i][j] = ' '
-		}
-	}
-
-	cx := float64(cols) / 2.0
-	cy := float64(rows) / 2.0
-
-	maxR := math.Min(cy*0.88, (cx/2.1)*0.88)
-	if maxR < 1 {
-		maxR = 1
-	}
-
-	type ring struct {
-		frac  float64
-		dots  int
-		speed float64
-		char  rune
-	}
-
-	rings := []ring{
-		{0.15, 6, 0.080, '·'},
-		{0.32, 11, 0.050, '•'},
-		{0.50, 18, 0.030, '●'},
-		{0.66, 26, 0.020, '•'},
-		{0.82, 36, 0.013, '·'},
-		{0.97, 48, 0.008, '·'},
-	}
-
-	for _, r := range rings {
-		radius := r.frac * maxR
-		phase := float64(frame) * r.speed
-		for d := 0; d < r.dots; d++ {
-			angle := (float64(d)/float64(r.dots))*2*math.Pi + phase
-			x := cx + radius*2.1*math.Cos(angle)
-			y := cy + radius*math.Sin(angle)
-			xi := int(math.Round(x))
-			yi := int(math.Round(y))
-			if yi >= 0 && yi < rows && xi >= 0 && xi < cols {
-				grid[yi][xi] = r.char
-			}
-		}
-	}
-
-	var sb strings.Builder
-	for i, row := range grid {
-		sb.WriteString(string(row))
-		if i < rows-1 {
-			sb.WriteByte('\n')
-		}
-	}
-	return sb.String()
 }
 
 func applyScroll(content string, offset, maxLines int) string {
@@ -313,19 +254,19 @@ func (m Model) renderMiddle() string {
 	full := m.renderContent(inner)
 	shown := applyScroll(full, m.scrollOffset, avail)
 
-	spiralRows := avail + 2
-	if spiralRows < 8 {
-		spiralRows = 8
+	starRows := avail + 2
+	if starRows < 8 {
+		starRows = 8
 	}
-	const spiralCols = 22
+	const starCols = 22
 
-	spiral := spiralSty.
+	star := starSty.
 		Width(sidebarW).
 		Padding(1, 1).
-		Render(renderSpiral(m.frame, spiralRows, spiralCols))
+		Render(RenderStar(m.frame, starRows, starCols))
 
 	content := boxSty.Width(contentW).Render(shown)
-	return lipgloss.JoinHorizontal(lipgloss.Top, spiral, content)
+	return lipgloss.JoinHorizontal(lipgloss.Top, star, content)
 }
 
 func (m Model) renderContent(w int) string {

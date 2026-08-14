@@ -1,0 +1,571 @@
+<title>ASCII Star Tuner</title>
+<style>
+  /* Deliberately single-theme: this previews art that only ever renders on a
+     dark terminal, so a light mode would misrepresent the result. Every colour
+     is painted explicitly so the page holds on either host ground. */
+  :root {
+    --ground:   #07090b;
+    --panel:    #0d1116;
+    --panel-2:  #11161c;
+    --edge:     #1b232d;
+    --edge-lit: #2b3947;
+    --text:     #DCE4EA;
+    --label:    #9AACB8;
+    --dim:      #6A7580;
+    --accent:   #7BADC0;
+    --accent-2: #4D7A96;
+    --warn:     #d99a6c;
+
+    --mono: ui-monospace, 'Cascadia Code', 'Cascadia Mono', 'JetBrains Mono',
+            Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  header { display: flex; flex-direction: column; gap: .5rem; }
+
+  h1 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  h1 .glyph { color: var(--accent); margin-right: .5rem; }
+
+  .sub { margin: 0; color: var(--dim); max-width: 64ch; }
+
+  .ramp { color: var(--accent); letter-spacing: .3em; }
+
+  .cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  @media (max-width: 860px) {
+    .cols { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--edge);
+    border-radius: 4px;
+  }
+
+  .stage {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 380px;
+    overflow-x: auto;
+  }
+
+  #art {
+    margin: 0;
+    color: var(--accent);
+    white-space: pre;
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1.15;
+    user-select: all;
+  }
+
+  .readout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    padding: .7rem 1rem;
+    border-top: 1px solid var(--edge);
+    color: var(--dim);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .readout b { color: var(--label); font-weight: 500; }
+
+  .rail { display: flex; flex-direction: column; gap: 1rem; }
+
+  fieldset {
+    margin: 0;
+    padding: .9rem 1rem 1.1rem;
+    background: var(--panel);
+    border: 1px solid var(--edge);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: .85rem;
+  }
+
+  legend {
+    padding: 0 .4rem;
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+  }
+
+  .ctrl { display: flex; flex-direction: column; gap: .3rem; }
+
+  .ctrl-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 12px;
+  }
+
+  .ctrl-top span:first-child { color: var(--label); }
+  .ctrl-top output { color: var(--text); font-variant-numeric: tabular-nums; }
+
+  input[type="range"] {
+    width: 100%;
+    height: 18px;
+    margin: 0;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 2px;
+    background: var(--edge-lit);
+  }
+  input[type="range"]::-moz-range-track {
+    height: 2px;
+    background: var(--edge-lit);
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 11px;
+    height: 11px;
+    margin-top: -4.5px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 11px;
+    height: 11px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  input[type="range"]:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .row { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+  button {
+    flex: 1 1 auto;
+    padding: .5rem .75rem;
+    background: var(--panel-2);
+    color: var(--label);
+    border: 1px solid var(--edge-lit);
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .06em;
+    cursor: pointer;
+    transition: color .12s, border-color .12s;
+  }
+
+  button:hover { color: var(--accent); border-color: var(--accent-2); }
+
+  button.primary {
+    color: var(--ground);
+    background: var(--accent);
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+  button.primary:hover { color: var(--ground); background: #8fbecf; }
+
+  .preset { padding: .35rem .6rem; font-size: 11px; flex: 0 0 auto; }
+
+  pre.snippet {
+    margin: 0;
+    padding: .9rem 1rem;
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 4px;
+    color: var(--label);
+    font-size: 12px;
+    line-height: 1.65;
+    overflow-x: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button { transition: none; }
+  }
+</style>
+
+<div class="shell">
+
+  <header>
+    <h1><span class="glyph">&#10022;</span>ASCII Star Tuner</h1>
+    <p class="sub">
+      Live preview of <code>ui.RenderStar</code> — the four-pointed star in the SSH portfolio
+      sidebar. Same algorithm as the Go, ported one-to-one. Tune it here, then paste the
+      constants into <code>ui/star.go</code>.
+    </p>
+    <p class="sub">density ramp <span class="ramp">.:-=+*#%@</span></p>
+  </header>
+
+  <div class="cols">
+
+    <div class="panel">
+      <div class="stage"><pre id="art" aria-label="ASCII star animation"></pre></div>
+      <div class="readout">
+        <span><b>frame</b> <span id="r-frame">0</span></span>
+        <span><b>grid</b> <span id="r-grid"></span></span>
+        <span><b>span</b> <span id="r-span"></span></span>
+        <span><b>fit</b> <span id="r-fit"></span></span>
+      </div>
+    </div>
+
+    <div class="rail">
+
+      <fieldset>
+        <legend>Grid</legend>
+        <div class="row">
+          <button class="preset" data-cols="22" data-rows="20">sidebar 22&times;20</button>
+          <button class="preset" data-cols="34" data-rows="26">34&times;26</button>
+          <button class="preset" data-cols="48" data-rows="34">48&times;34</button>
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>columns</span><output id="o-cols"></output></div>
+          <input type="range" id="cols" min="10" max="60" step="1" value="22">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>rows</span><output id="o-rows"></output></div>
+          <input type="range" id="rows" min="8" max="44" step="1" value="20">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>cell aspect</span><output id="o-aspect"></output></div>
+          <input type="range" id="aspect" min="0.9" max="1.6" step="0.05" value="1.15">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Shape</legend>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>arm sharpness</span><output id="o-sharp"></output></div>
+          <input type="range" id="sharp" min="0.3" max="1.2" step="0.01" value="0.70">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>vertical stretch</span><output id="o-stretch"></output></div>
+          <input type="range" id="stretch" min="0.7" max="1.8" step="0.02" value="1.18">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>arm falloff</span><output id="o-gamma"></output></div>
+          <input type="range" id="gamma" min="0.15" max="1.2" step="0.01" value="0.65">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>gain</span><output id="o-core"></output></div>
+          <input type="range" id="core" min="0.6" max="2" step="0.01" value="1.28">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Texture</legend>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>grain</span><output id="o-grain"></output></div>
+          <input type="range" id="grain" min="0" max="0.9" step="0.01" value="0.19">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>glow reach</span><output id="o-glow"></output></div>
+          <input type="range" id="glow" min="0" max="1.5" step="0.01" value="0.35">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Motion</legend>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>spin / frame</span><output id="o-spin"></output></div>
+          <input type="range" id="spin" min="0" max="0.06" step="0.001" value="0">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>pulse</span><output id="o-pulse"></output></div>
+          <input type="range" id="pulse" min="0" max="0.3" step="0.005" value="0.065">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>pulse rate</span><output id="o-pulseRate"></output></div>
+          <input type="range" id="pulseRate" min="0" max="0.3" step="0.005" value="0.095">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>fps</span><output id="o-fps"></output></div>
+          <input type="range" id="fps" min="1" max="30" step="1" value="12">
+        </div>
+        <div class="row">
+          <button id="toggle" class="primary">pause</button>
+          <button id="step">step</button>
+          <button id="reset">reset</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Export</legend>
+        <button id="copy" class="primary">copy Go constants</button>
+        <pre class="snippet" id="snippet"></pre>
+      </fieldset>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var RAMP = " .:-=+*#%@";
+
+  var P = {
+    sharp: 0.70,
+    gamma: 0.65,
+    core: 1.28,
+    stretch: 1.18,
+    spin: 0.000,
+    pulse: 0.065,
+    pulseRate: 0.095,
+    grain: 0.19,
+    glow: 0.35
+  };
+  var DEFAULTS = Object.assign({}, P);
+
+  var grid = { cols: 22, rows: 20, aspect: 1.15, fps: 12 };
+  var GRID_DEFAULTS = Object.assign({}, grid);
+
+  var geom = { rx: 0, ry: 0 };
+
+  function ramp(v) {
+    if (v <= 0) return " ";
+    if (v > 1) v = 1;
+    return RAMP[Math.round(v * (RAMP.length - 1))];
+  }
+
+  function starHash(a, b, c) {
+    var x = Math.sin(a * 127.1 + b * 311.7 + c * 74.7) * 43758.5453;
+    return x - Math.floor(x);
+  }
+
+  function renderStar(frame, rows, cols) {
+    if (rows < 1 || cols < 1) return "";
+
+    var cx = (cols - 1) / 2;
+    var cy = (rows - 1) / 2;
+
+    var ry = Math.min(cy * 0.96, cx * 0.48 * P.stretch);
+    if (ry < 1) ry = 1;
+    ry *= 1 + P.pulse * Math.sin(frame * P.pulseRate);
+    var rx = 2 * ry / P.stretch;
+
+    geom.rx = rx;
+    geom.ry = ry;
+
+    var a = frame * P.spin;
+    var sinA = Math.sin(a), cosA = Math.cos(a);
+
+    var out = [];
+    for (var i = 0; i < rows; i++) {
+      var line = "";
+      for (var j = 0; j < cols; j++) {
+        var ox = (j - cx) / rx;
+        var oy = (i - cy) / ry;
+
+        var sx = ox * cosA + oy * sinA;
+        var sy = -ox * sinA + oy * cosA;
+
+        var f = Math.pow(Math.abs(sx), P.sharp) + Math.pow(Math.abs(sy), P.sharp);
+
+        var v;
+        if (f <= 1) {
+          var b = Math.pow(1 - f, P.gamma);
+          var n = starHash(j * 3 + i * 7, i * 5 - j, Math.floor(frame / 4));
+          v = b * P.core * (1 - P.grain + P.grain * 2 * n);
+        } else {
+          var reach = P.glow > 0 ? (f - 1) / P.glow : 99;
+          if (reach >= 1) { line += " "; continue; }
+          var gn = starHash(j * 7 + i * 3, i, Math.floor(frame / 3) + i + j);
+          if (gn > 0.34 * (1 - reach)) { line += " "; continue; }
+          v = 0.06 + 1.02 * (1 - reach) * gn;
+        }
+        line += ramp(v);
+      }
+      out.push(line);
+    }
+    return out.join("\n");
+  }
+
+  var art = document.getElementById("art");
+  var snippet = document.getElementById("snippet");
+  var frame = 0;
+  var playing = true;
+  var last = 0;
+
+  var shape = ["sharp", "gamma", "core", "stretch", "spin", "pulse", "pulseRate", "grain", "glow"];
+  var gridKeys = ["cols", "rows", "aspect", "fps"];
+
+  function fmt(v, dp) { return Number(v).toFixed(dp); }
+
+  var DP = {
+    sharp: 2, gamma: 2, core: 2, stretch: 2,
+    spin: 3, pulse: 3, pulseRate: 3, grain: 2, glow: 2
+  };
+
+  function syncOutputs() {
+    shape.forEach(function (k) {
+      document.getElementById("o-" + k).textContent = fmt(P[k], DP[k]);
+    });
+    document.getElementById("o-cols").textContent = grid.cols;
+    document.getElementById("o-rows").textContent = grid.rows;
+    document.getElementById("o-aspect").textContent = fmt(grid.aspect, 2);
+    document.getElementById("o-fps").textContent = grid.fps;
+  }
+
+  function goSnippet() {
+    return "StarSharp     = " + fmt(P.sharp, 2) + "\n" +
+           "StarGamma     = " + fmt(P.gamma, 2) + "\n" +
+           "StarCore      = " + fmt(P.core, 2) + "\n" +
+           "StarStretch   = " + fmt(P.stretch, 2) + "\n" +
+           "StarSpin      = " + fmt(P.spin, 3) + "\n" +
+           "StarPulse     = " + fmt(P.pulse, 3) + "\n" +
+           "StarPulseRate = " + fmt(P.pulseRate, 3) + "\n" +
+           "StarGrain     = " + fmt(P.grain, 2) + "\n" +
+           "StarGlow      = " + fmt(P.glow, 2);
+  }
+
+  function draw() {
+    art.textContent = renderStar(frame, grid.rows, grid.cols);
+    art.style.lineHeight = grid.aspect;
+
+    document.getElementById("r-frame").textContent = frame;
+    document.getElementById("r-grid").textContent = grid.cols + "×" + grid.rows;
+    document.getElementById("r-span").textContent =
+      fmt(geom.rx * 2, 1) + " × " + fmt(geom.ry * 2, 1) + " cells";
+
+    var fit = document.getElementById("r-fit");
+    var overW = geom.rx * 2 - grid.cols;
+    var overH = geom.ry * 2 - grid.rows;
+    if (overW > 0 || overH > 0) {
+      fit.textContent = "clipped at full pulse";
+      fit.style.color = "var(--warn)";
+    } else {
+      fit.textContent = fmt(-overW, 1) + " cols, " + fmt(-overH, 1) + " rows spare";
+      fit.style.color = "";
+    }
+
+    snippet.textContent = goSnippet();
+  }
+
+  shape.forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener("input", function () {
+      P[id] = parseFloat(el.value);
+      syncOutputs();
+      draw();
+    });
+  });
+
+  gridKeys.forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener("input", function () {
+      grid[id] = id === "aspect" ? parseFloat(el.value) : parseInt(el.value, 10);
+      syncOutputs();
+      draw();
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".preset"), function (b) {
+    b.addEventListener("click", function () {
+      grid.cols = parseInt(b.getAttribute("data-cols"), 10);
+      grid.rows = parseInt(b.getAttribute("data-rows"), 10);
+      document.getElementById("cols").value = grid.cols;
+      document.getElementById("rows").value = grid.rows;
+      syncOutputs();
+      draw();
+    });
+  });
+
+  var toggle = document.getElementById("toggle");
+  toggle.addEventListener("click", function () {
+    playing = !playing;
+    toggle.textContent = playing ? "pause" : "play";
+  });
+
+  document.getElementById("step").addEventListener("click", function () {
+    playing = false;
+    toggle.textContent = "play";
+    frame++;
+    draw();
+  });
+
+  document.getElementById("reset").addEventListener("click", function () {
+    Object.assign(P, DEFAULTS);
+    Object.assign(grid, GRID_DEFAULTS);
+    shape.forEach(function (id) { document.getElementById(id).value = P[id]; });
+    gridKeys.forEach(function (id) { document.getElementById(id).value = grid[id]; });
+    frame = 0;
+    syncOutputs();
+    draw();
+  });
+
+  var copy = document.getElementById("copy");
+  copy.addEventListener("click", function () {
+    navigator.clipboard.writeText(goSnippet()).then(function () {
+      copy.textContent = "copied";
+      setTimeout(function () { copy.textContent = "copy Go constants"; }, 1400);
+    }, function () {
+      copy.textContent = "select the text below";
+      setTimeout(function () { copy.textContent = "copy Go constants"; }, 1800);
+    });
+  });
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    playing = false;
+    toggle.textContent = "play";
+  }
+
+  function loop(ts) {
+    if (playing && ts - last >= 1000 / grid.fps) {
+      last = ts;
+      frame++;
+      draw();
+    }
+    requestAnimationFrame(loop);
+  }
+
+  syncOutputs();
+  draw();
+  requestAnimationFrame(loop);
+})();
+</script>
