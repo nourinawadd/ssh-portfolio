@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>under construction</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.95em' font-size='100' fill='white'>✦</text></svg>">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #000000;
+      --text:   #DCE4EA;
+      --accent: #7BADC0;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype',
+                   'Times New Roman', Times, serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .stage {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .title-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .title {
+      font-size: clamp(.9rem, 3.8vw, 1.8rem);
+      font-weight: 400;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      margin-right: -.28em;
+    }
+
+    .ch {
+      display: inline-block;
+      text-align: center;
+      white-space: pre;
+    }
+
+    .ch.g {
+      color: var(--accent);
+      opacity: .8;
+    }
+
+    .tear {
+      position: absolute;
+      left: 0;
+      top: 0;
+      margin-right: 0;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    @media (max-width: 480px) {
+      .stage { padding: 2rem .75rem; }
+      .title { letter-spacing: .16em; margin-right: -.16em; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="title-wrap" id="w"><h1 class="title" id="t" aria-label="Under construction">UNDER CONSTRUCTION</h1></div>
+</div>
+
+<script>
+(function () {
+  var title = document.getElementById('t');
+  var wrap  = document.getElementById('w');
+  var text  = title.textContent;
+
+  var chars = [];
+  title.textContent = '';
+
+  for (var i = 0; i < text.length; i++) {
+    var s = document.createElement('span');
+    s.className = 'ch';
+    s.textContent = text[i];
+    s.setAttribute('data-base', text[i]);
+    title.appendChild(s);
+    chars.push(s);
+  }
+
+  function lock() {
+    chars.forEach(function (s) {
+      s.textContent = s.getAttribute('data-base');
+      s.classList.remove('g');
+      s.style.width = '';
+    });
+    var w = chars.map(function (s) { return s.getBoundingClientRect().width; });
+    chars.forEach(function (s, i) { s.style.width = w[i].toFixed(2) + 'px'; });
+  }
+
+  lock();
+
+  var rt;
+  window.addEventListener('resize', function () {
+    clearTimeout(rt);
+    rt = setTimeout(lock, 150);
+  });
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var GLYPHS = ['/', '\\', '|', '_', '-', '+', '=', '<', '>', '~', '^', '#', '*'];
+
+  var swappable = chars.filter(function (s) {
+    return s.getAttribute('data-base') !== ' ';
+  });
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function pick(arr)  { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function swap() {
+    var n   = Math.random() < 0.2 ? 2 : 1;
+    var hit = [];
+    for (var i = 0; i < n; i++) {
+      var s = pick(swappable);
+      if (hit.indexOf(s) !== -1) continue;
+      hit.push(s);
+      s.textContent = pick(GLYPHS);
+      s.classList.add('g');
+    }
+    setTimeout(function () {
+      hit.forEach(function (s) {
+        s.textContent = s.getAttribute('data-base');
+        s.classList.remove('g');
+      });
+    }, rand(50, 110));
+  }
+
+  function tear() {
+    var clone = title.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.setAttribute('aria-hidden', 'true');
+    clone.className = 'title tear';
+
+    var fs  = parseFloat(getComputedStyle(title).fontSize);
+    var top = rand(25, 62);
+    var h   = rand(7, 15);
+
+    clone.style.clipPath = 'inset(' + top.toFixed(1) + '% 0 ' + (100 - top - h).toFixed(1) + '% 0)';
+    clone.style.transform = 'translateX(' +
+      ((Math.random() < 0.5 ? -1 : 1) * rand(0.05, 0.085) * fs).toFixed(2) + 'px)';
+
+    wrap.appendChild(clone);
+    setTimeout(function () { clone.remove(); }, rand(70, 95));
+  }
+
+  function schedule() {
+    setTimeout(function () {
+      (Math.random() < 0.7 ? swap : tear)();
+      schedule();
+    }, rand(2100, 5600));
+  }
+
+  schedule();
+})();
+</script>
+
+</body>
+</html>

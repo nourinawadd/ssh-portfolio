@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.95em' font-size='100' fill='white'>✦</text></svg>">  
+<meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nourin.is-a.dev</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #000000;
+      --bg2:     #0a0a0a;
+      --border:  #222222;
+      --dim:     #555555;
+      --text:    #B8C8D4;
+      --bright:  #DCE4EA;
+      --accent:  #7BADC0;
+      --accent2: #4D7A96;
+      --label:   #9AACB8;
+      --link:    #9CC0D0;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Berkeley Mono', 'Cascadia Code', 'Fira Code',
+                   'JetBrains Mono', ui-monospace,
+                   'SFMono-Regular', Menlo, Consolas,
+                   'Liberation Mono', monospace;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 3rem 4rem;
+      gap: 4rem;
+    }
+
+    .term {
+      width: 100%;
+      max-width: 520px;
+      opacity: 0;
+      animation: appear .25s ease forwards;
+      flex-shrink: 0;
+    }
+
+    /* spiral */
+    .spiral {
+      opacity: 0;
+      animation: appear .25s ease .1s forwards;
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    #spiral-canvas {
+      color: var(--accent2);
+      font-size: 11px;
+      line-height: 1.3;
+      white-space: pre;
+      letter-spacing: .15em;
+      user-select: none;
+    }
+
+    .line  { display: block; }
+    .gap   { margin-bottom: .85rem; }
+    .gap2  { margin-bottom: 1.6rem; }
+
+    .c-dim    { color: var(--dim); }
+    .c-label  { color: var(--label); }
+    .c-accent { color: var(--accent); }
+    .c-bright { color: var(--bright); font-weight: 500; }
+
+    .name {
+      font-size: 1.45em;
+      font-weight: 700;
+      color: var(--bright);
+      letter-spacing: .01em;
+    }
+
+    .cmd-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--accent2);
+      padding: .55rem .85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      cursor: pointer;
+      transition: border-left-color .12s;
+      margin-bottom: .3rem;
+    }
+
+    .cmd-box:hover { border-left-color: var(--accent); }
+
+    .cmd-left {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .ps1 { color: var(--accent2); user-select: none; }
+    .cmd-box .cmd { color: var(--bright); }
+
+    .copy-lbl {
+      color: var(--dim);
+      font-size: .75em;
+      flex-shrink: 0;
+      transition: color .12s;
+    }
+
+    .cmd-box:hover .copy-lbl { color: var(--accent); }
+
+    .hint {
+      font-size: .75em;
+      color: var(--dim);
+      height: 1.1rem;
+      transition: color .2s;
+    }
+
+    .hint.ok { color: var(--accent); }
+
+    .items { padding-left: 1.4rem; }
+    .item .dot { color: var(--accent); margin-right: .4rem; }
+
+    a { color: var(--link); text-decoration: none; }
+    a:hover { color: var(--accent); }
+
+    .windows-note {
+      margin-top: 1.4rem;
+      border-top: 1px solid var(--border);
+      padding-top: .85rem;
+    }
+
+    .cur {
+      display: inline-block;
+      width: .45em;
+      height: .82em;
+      background: var(--accent);
+      vertical-align: text-bottom;
+      margin-left: 2px;
+      animation: blink 1.1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    @keyframes appear { to { opacity: 1; } }
+
+    @media (max-width: 800px) {
+      .spiral { display: none; }
+      .wrap { padding: 2.5rem 1.5rem; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="term">
+
+    <span class="line c-dim gap">── nourin.is-a.dev ──────────────────────────────</span>
+
+    <span class="line gap"><span class="name">Nourin Awad</span><span class="cur"></span></span>
+    <span class="line c-label gap2">Backend Developer · Egypt</span>
+
+    <span class="line"><span class="c-accent">◆</span> <span class="c-label">interactive terminal portfolio</span></span>
+    <span class="line c-dim gap">  ssh into a full TUI — projects, skills, experience</span>
+
+    <div class="cmd-box gap" onclick="copySSH()">
+      <div class="cmd-left">
+        <span class="ps1">$</span>
+        <span class="cmd">ssh nourin.is-a.dev -p 2323</span>
+      </div>
+      <span class="copy-lbl" id="copy-lbl">copy</span>
+    </div>
+    <div class="hint gap" id="hint">click the box to copy</div>
+
+    <span class="line"><span class="c-accent">◆</span> <span class="c-label">what's inside</span></span>
+    <div class="items gap">
+      <div class="item"><span class="dot">·</span>projects &amp; source links</div>
+      <div class="item"><span class="dot">·</span>work experience &amp; internships</div>
+      <div class="item"><span class="dot">·</span>technical skills</div>
+      <div class="item"><span class="dot">·</span>side projects &amp; design work</div>
+      <div class="item"><span class="dot">·</span>contact</div>
+    </div>
+
+    <span class="line c-dim">── links ────────────────────────────────────────</span>
+    <span class="line"><span class="c-dim">  github   </span><a href="https://github.com/nourinawadd">github.com/nourinawadd</a></span>
+    <span class="line"><span class="c-dim">  email    </span><a href="mailto:nourinawad@gmail.com">nourinawad@gmail.com</a></span>
+    <span class="line"><span class="c-dim">  linkedin  </span><a href="https://www.linkedin.com/in/nourinawad/">linkedin.com/in/nourinawad</a></span>
+
+    <div class="windows-note">
+      <span class="line"><span class="c-accent">◆</span> <span class="c-label">windows users</span></span>
+      <span class="line c-dim">  ssh may not render correctly in cmd or powershell.</span>
+      <span class="line c-dim">  use <a href="https://www.chiark.greenend.org.uk/~sgtatham/putty/">PuTTY</a>, <a href="https://apps.microsoft.com/detail/9n8g5rfz9xk3">Windows Terminal</a>, or enable</span>
+      <span class="line c-dim">  <a href="https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse">OpenSSH</a> via Settings → Optional Features.</span>
+    </div>
+
+  </div>
+
+  <div class="spiral">
+    <pre id="spiral-canvas"></pre>
+  </div>
+</div>
+
+<script>
+// ── copy ──────────────────────────────────────────────────────────────────────
+function copySSH() {
+  navigator.clipboard.writeText('ssh nourin.is-a.dev -p 2323').then(() => {
+    document.getElementById('hint').textContent = 'copied!';
+    document.getElementById('hint').classList.add('ok');
+    document.getElementById('copy-lbl').textContent = '✓';
+    setTimeout(() => {
+      document.getElementById('hint').textContent = 'click the box to copy';
+      document.getElementById('hint').classList.remove('ok');
+      document.getElementById('copy-lbl').textContent = 'copy';
+    }, 2000);
+  });
+}
+
+// ── spiral ────────────────────────────────────────────────────────────────────
+const COLS = 22;
+const ROWS = 20;
+const rings = [
+  { frac: 0.18, dots: 6,  speed: 0.022, ch: '·' },
+  { frac: 0.36, dots: 12, speed: 0.014, ch: '·' },
+  { frac: 0.54, dots: 20, speed: 0.009, ch: '•' },
+  { frac: 0.75, dots: 28, speed: 0.005, ch: '•' },
+  { frac: 0.94, dots: 38, speed: 0.003, ch: '·' },
+];
+
+let frame = 0;
+const el = document.getElementById('spiral-canvas');
+
+function renderSpiral() {
+  const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(' '));
+  const cx = (COLS - 1) / 2;
+  const cy = (ROWS - 1) / 2;
+  const maxR = Math.min(cy * 0.92, cx * 0.55);
+
+  for (const r of rings) {
+    const radius = r.frac * maxR;
+    const phase  = frame * r.speed;
+    for (let d = 0; d < r.dots; d++) {
+      const angle = (d / r.dots) * 2 * Math.PI + phase;
+      const xi = Math.round(cx + radius * 2.05 * Math.cos(angle));
+      const yi = Math.round(cy + radius * Math.sin(angle));
+      if (yi >= 0 && yi < ROWS && xi >= 0 && xi < COLS) {
+        grid[yi][xi] = r.ch;
+      }
+    }
+  }
+
+  el.textContent = grid.map(row => row.join('')).join('\n');
+  frame++;
+  requestAnimationFrame(renderSpiral);
+}
+
+renderSpiral();
+</script>
+</body>
+</html>
