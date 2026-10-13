@@ -5,7 +5,26 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
+
+func TestViewUsesBlackBackgroundAcrossTerminalCanvas(t *testing.T) {
+	profile := lipgloss.ColorProfile()
+	lipgloss.SetColorProfile(termenv.TrueColor)
+	defer lipgloss.SetColorProfile(profile)
+
+	output := NewModel(100, 40).View()
+	if !strings.Contains(output, "\x1b[48;2;0;0;0m") {
+		t.Fatal("rendered terminal view should set a true-black background")
+	}
+	if strings.Contains(output, "\x1b[48;2;40;40;40m") {
+		t.Fatal("rendered terminal view should not expose the terminal's charcoal background")
+	}
+	if !strings.Contains(output, "\x1b[48;2;77;121;150m") {
+		t.Fatal("active tab should retain its blue highlight")
+	}
+}
 
 func TestMainProjectsMatchPortfolioList(t *testing.T) {
 	want := []string{"Anchor", "nourin-drive", "SSH Portfolio", "Tether Note", "HOLD"}

@@ -15,10 +15,11 @@ var (
 	clrBright  = lipgloss.Color("#DCE4EA")
 	clrSecond  = lipgloss.Color("#89AABA")
 	clrLink    = lipgloss.Color("#9CC0D0")
+	clrBg      = lipgloss.Color("#000000")
 )
 
 var (
-	headerStyle = lipgloss.NewStyle().Foreground(clrAccent).Bold(true)
+	headerStyle = lipgloss.NewStyle().Foreground(clrAccent).Background(clrBg).Bold(true)
 
 	activeTabSty = lipgloss.NewStyle().
 			Bold(true).
@@ -28,28 +29,31 @@ var (
 
 	inactiveTabSty = lipgloss.NewStyle().
 			Foreground(clrDim).
+			Background(clrBg).
 			Padding(0, 2)
 
 	contentBoxSty = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(clrAccent).
+			Background(clrBg).
 			Padding(1, 2)
 
 	detailBoxSty = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(clrSecond).
+			Background(clrBg).
 			Padding(1, 2)
 
-	sectionSty = lipgloss.NewStyle().Foreground(clrSection).Bold(true)
-	labelSty   = lipgloss.NewStyle().Foreground(clrLabel).Bold(true)
-	dimSty     = lipgloss.NewStyle().Foreground(clrDim)
-	brightSty  = lipgloss.NewStyle().Foreground(clrBright).Bold(true)
-	linkSty    = lipgloss.NewStyle().Foreground(clrLink).Underline(true)
-	cursorSty  = lipgloss.NewStyle().Foreground(clrAccent).Bold(true)
-	footerSty  = lipgloss.NewStyle().Foreground(clrDim)
-	tagSty     = lipgloss.NewStyle().Foreground(clrSecond)
-	catSty     = lipgloss.NewStyle().Foreground(clrAccent).Bold(true)
-	starSty    = lipgloss.NewStyle().Foreground(clrAccent)
+	sectionSty = lipgloss.NewStyle().Foreground(clrSection).Background(clrBg).Bold(true)
+	labelSty   = lipgloss.NewStyle().Foreground(clrLabel).Background(clrBg).Bold(true)
+	dimSty     = lipgloss.NewStyle().Foreground(clrDim).Background(clrBg)
+	brightSty  = lipgloss.NewStyle().Foreground(clrBright).Background(clrBg).Bold(true)
+	linkSty    = lipgloss.NewStyle().Foreground(clrLink).Background(clrBg).Underline(true)
+	cursorSty  = lipgloss.NewStyle().Foreground(clrAccent).Background(clrBg).Bold(true)
+	footerSty  = lipgloss.NewStyle().Foreground(clrDim).Background(clrBg)
+	tagSty     = lipgloss.NewStyle().Foreground(clrSecond).Background(clrBg)
+	catSty     = lipgloss.NewStyle().Foreground(clrAccent).Background(clrBg).Bold(true)
+	starSty    = lipgloss.NewStyle().Foreground(clrAccent).Background(clrBg)
 )
 
 type project struct {
@@ -264,15 +268,25 @@ func (m Model) contentAvailLines() int {
 
 func (m Model) View() string {
 	if m.width < 61 || m.height < 30 {
-		return lipgloss.NewStyle().Foreground(clrLabel).Render(
+		content := lipgloss.NewStyle().Foreground(clrLabel).Background(clrBg).Render(
 			"\n  [ terminal too small — please resize to at least 61×30 ]",
 		)
+		return m.placeOnBlack(content)
 	}
-	return lipgloss.JoinVertical(lipgloss.Left,
+	content := lipgloss.JoinVertical(lipgloss.Left,
 		m.renderHeader(),
 		m.renderTabBar(),
 		m.renderMiddle(),
 		m.renderFooter(),
+	)
+	return m.placeOnBlack(content)
+}
+
+func (m Model) placeOnBlack(content string) string {
+	content = lipgloss.NewStyle().Background(clrBg).Render(content)
+	return lipgloss.Place(
+		m.width, m.height, lipgloss.Left, lipgloss.Top, content,
+		lipgloss.WithWhitespaceBackground(clrBg),
 	)
 }
 
@@ -404,7 +418,7 @@ func (m Model) renderAbout(w int) string {
 	b.WriteString("  " + labelSty.Render("Mansoura University") + "\n")
 	b.WriteString("  BE · Communications & Computer Engineering\n")
 	b.WriteString("  " + dimSty.Render("Sep 2022 – Present") + "   " +
-		lipgloss.NewStyle().Foreground(clrSection).Render("GPA: 3.95 / 4.0") + "\n")
+		lipgloss.NewStyle().Foreground(clrSection).Background(clrBg).Render("GPA: 3.95 / 4.0") + "\n")
 	writeParagraph(&b, w, "Coursework: Data Structures, Operating Systems, Distributed Systems, AI, Calculus")
 	b.WriteString("\n")
 	b.WriteString("  " + labelSty.Render("Mansoura College International Schools") + "\n")
@@ -496,7 +510,7 @@ func writeParagraph(b *strings.Builder, width int, text string) {
 	if lineWidth < 1 {
 		lineWidth = 1
 	}
-	lines := strings.Split(lipgloss.NewStyle().Width(lineWidth).Render(text), "\n")
+	lines := strings.Split(lipgloss.NewStyle().Width(lineWidth).Background(clrBg).Render(text), "\n")
 	for _, line := range lines {
 		b.WriteString("  " + line + "\n")
 	}
@@ -518,14 +532,14 @@ func (m Model) renderProjects(w int) string {
 			pfx = cursorSty.Render("▶ ")
 		}
 
-		nameSty := lipgloss.NewStyle().Foreground(clrBright)
+		nameSty := lipgloss.NewStyle().Foreground(clrBright).Background(clrBg)
 		if selected {
 			nameSty = nameSty.Bold(true)
 		}
 
 		b.WriteString(pfx + nameSty.Render(p.name) + "\n")
 		b.WriteString("    " + dimSty.Render(p.short) + "\n")
-		b.WriteString("    " + lipgloss.NewStyle().Foreground(clrSecond).Render(p.tech) + "\n\n")
+		b.WriteString("    " + lipgloss.NewStyle().Foreground(clrSecond).Background(clrBg).Render(p.tech) + "\n\n")
 	}
 
 	return b.String()
@@ -541,7 +555,7 @@ func (m Model) renderProjectDetail(idx int) string {
 	b.WriteString(dimSty.Render("esc · back to projects") + "\n\n")
 
 	b.WriteString(labelSty.Render(p.name) + "\n")
-	b.WriteString(lipgloss.NewStyle().Foreground(clrSecond).Render(p.tech) + "\n\n")
+	b.WriteString(lipgloss.NewStyle().Foreground(clrSecond).Background(clrBg).Render(p.tech) + "\n\n")
 
 	b.WriteString(sectionSty.Render("About") + "\n")
 	b.WriteString("  " + p.short + "\n\n")
@@ -586,7 +600,7 @@ func (m Model) renderSideProjects(w int) string {
 			pfx = cursorSty.Render("▶ ")
 		}
 
-		nameSty := lipgloss.NewStyle().Foreground(clrBright)
+		nameSty := lipgloss.NewStyle().Foreground(clrBright).Background(clrBg)
 		if selected {
 			nameSty = nameSty.Bold(true)
 		}
@@ -612,7 +626,7 @@ func (m Model) renderGameList(w int) string {
 			pfx = cursorSty.Render("▶ ")
 		}
 
-		nameSty := lipgloss.NewStyle().Foreground(clrBright)
+		nameSty := lipgloss.NewStyle().Foreground(clrBright).Background(clrBg)
 		if selected {
 			nameSty = nameSty.Bold(true)
 		}
