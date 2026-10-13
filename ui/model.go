@@ -14,6 +14,8 @@ type Model struct {
 	cursor       int
 	frame        int
 	detailOpen   bool
+	gameListOpen bool
+	gameCursor   int
 	scrollOffset int
 }
 

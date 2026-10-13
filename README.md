@@ -15,8 +15,8 @@ ssh nourin.is-a.dev -p 2323
 
 - **about** — background, education, extracurriculars
 - **projects** — technical projects with highlights and links
-- **side projects** — game dev and design work
-- **skills** — languages, frameworks, tools
+- **side projects** — individual games under Indie Game Projects, plus design work
+- **skills** — languages, frameworks, tools, certifications
 - **experience** — internships and roles
 - **contact** — links and email
 
@@ -26,8 +26,8 @@ ssh nourin.is-a.dev -p 2323
 |-----|--------|
 | `← →` or `h l` | switch tabs |
 | `↑ ↓` or `k j` | scroll / move cursor |
-| `enter` | open project detail |
-| `esc` | go back |
+| `enter` | open project detail or a nested list |
+| `esc` | go back one level |
 | `q` | quit |
 
 ## ✦ stack

@@ -12,15 +12,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 
-		// ── tab navigation (blocked while detail open) ─────────────────────
+		// ── tab navigation (blocked while a nested view is open) ───────────
 		case "right", "l", "tab":
-			if !m.detailOpen {
+			if !m.detailOpen && !m.gameListOpen {
 				m.activeTab = (m.activeTab + 1) % len(m.tabs)
 				m.cursor = 0
 				m.scrollOffset = 0
 			}
 		case "left", "h", "shift+tab":
-			if !m.detailOpen {
+			if !m.detailOpen && !m.gameListOpen {
 				m.activeTab = (m.activeTab - 1 + len(m.tabs)) % len(m.tabs)
 				m.cursor = 0
 				m.scrollOffset = 0
@@ -29,7 +29,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// ── up: cursor in list tabs, scroll elsewhere ─────────────────────
 		case "up", "k":
 			if !m.detailOpen && m.isListTab() {
-				if m.cursor > 0 {
+				if m.activeTab == 2 && m.gameListOpen && m.gameCursor > 0 {
+					m.gameCursor--
+				} else if !(m.activeTab == 2 && m.gameListOpen) && m.cursor > 0 {
 					m.cursor--
 				}
 			} else {
@@ -41,7 +43,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// ── down: cursor in list tabs, scroll elsewhere ───────────────────
 		case "down", "j":
 			if !m.detailOpen && m.isListTab() {
-				if m.cursor < m.maxCursor() {
+				if m.activeTab == 2 && m.gameListOpen {
+					if m.gameCursor < m.maxCursor() {
+						m.gameCursor++
+					}
+				} else if m.cursor < m.maxCursor() {
 					m.cursor++
 				}
 			} else {
@@ -51,7 +57,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// ── open detail ───────────────────────────────────────────────────
 		case "enter", " ":
 			if !m.detailOpen && m.isListTab() {
-				m.detailOpen = true
+				if m.activeTab == 2 && !m.gameListOpen &&
+					m.cursor >= 0 && m.cursor < len(sideProjects) &&
+					len(sideProjects[m.cursor].games) > 0 {
+					m.gameListOpen = true
+					m.gameCursor = 0
+				} else {
+					m.detailOpen = true
+				}
 				m.scrollOffset = 0
 			}
 
@@ -59,6 +72,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc", "b", "backspace":
 			if m.detailOpen {
 				m.detailOpen = false
+				m.scrollOffset = 0
+			} else if m.gameListOpen {
+				m.gameListOpen = false
+				m.gameCursor = 0
 				m.scrollOffset = 0
 			}
 		}
@@ -70,7 +87,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		if m.cursor > m.maxCursor() {
+		if m.activeTab == 2 && m.gameListOpen {
+			if m.gameCursor > m.maxCursor() {
+				m.gameCursor = m.maxCursor()
+			}
+		} else if m.cursor > m.maxCursor() {
 			m.cursor = m.maxCursor()
 		}
 	}
@@ -89,8 +110,18 @@ func (m Model) maxCursor() int {
 	case 1:
 		return len(projects) - 1
 	case 2:
+		if m.gameListOpen {
+			return len(m.currentGames()) - 1
+		}
 		return len(sideProjects) - 1
 	default:
 		return 0
 	}
+}
+
+func (m Model) currentGames() []sideProject {
+	if m.cursor < 0 || m.cursor >= len(sideProjects) {
+		return nil
+	}
+	return sideProjects[m.cursor].games
 }
